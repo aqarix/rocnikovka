@@ -4,36 +4,84 @@ using UnityEngine;
 
 public class GrapplingHook : MonoBehaviour
 {
-    [SerializeField] float length;
+    [SerializeField] float horizontalPullSpeed;
+    [SerializeField] float verticalPullSpeed;
+    [SerializeField] float grappleReach;
     [SerializeField] LayerMask grappleLayer;
-    Vector3 grapplePoint;
-    DistanceJoint2D joint;
+    [SerializeField] LineRenderer ropeRenderer;
+
+    Vector2 targetPosition;
+    bool isPulling = false;
+    Rigidbody2D rb;
 
     void Start()
     {
-        joint = GetComponent<DistanceJoint2D>();
-        joint.enabled = false;
+        rb = GetComponent<Rigidbody2D>();
+
+        if (ropeRenderer != null)
+        {
+            ropeRenderer.positionCount = 2;
+            ropeRenderer.enabled = false;
+        }
     }
 
     void Update()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            RaycastHit2D hit = Physics2D.Raycast(origin: Camera.main.ScreenToWorldPoint(Input.mousePosition), direction: Vector2.zero, distance: Mathf.Infinity, layerMask: grappleLayer);
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0; 
 
-            if(hit.collider != null)
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, mouseWorldPos - transform.position, Mathf.Infinity, grappleLayer);
+
+            if (hit.collider != null)
             {
-                grapplePoint = hit.point;
-                grapplePoint.z = 0;
-                joint.connectedAnchor = grapplePoint;
-                joint.enabled = true;
-                joint.distance = length;
+                targetPosition = hit.point;
+                isPulling = true;
+
+                if (ropeRenderer != null)
+                {
+                    ropeRenderer.enabled = true;
+                    ropeRenderer.SetPosition(0, transform.position);
+                    ropeRenderer.SetPosition(1, targetPosition);
+                }
             }
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            joint.enabled = false;
+            isPulling = false;
+            if (ropeRenderer != null)
+            {
+                ropeRenderer.enabled = false;
+            }
+        }
+
+        if (isPulling && Vector2.Distance(transform.position, targetPosition) >= grappleReach)
+        {
+            isPulling = false;
+            if (ropeRenderer != null)
+            {
+                ropeRenderer.enabled = false;
+            }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (isPulling && Input.GetMouseButton(0))
+        {
+            Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+
+            float pullX = direction.x * horizontalPullSpeed * Time.fixedDeltaTime;
+            float pullY = direction.y * verticalPullSpeed * Time.fixedDeltaTime;
+
+            rb.velocity += new Vector2(pullX, pullY);
+
+            if (ropeRenderer != null)
+            {
+                ropeRenderer.SetPosition(0, transform.position);
+            }
         }
     }
 }

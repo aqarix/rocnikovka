@@ -34,6 +34,11 @@ public class PlayerController : MonoBehaviour
                 doubleJump = false;
             }
         }
+
+        if(transform.position.y < -30)
+        {
+            transform.position = Vector2.zero;
+        }
     }
 
     bool isGrounded()
