@@ -5,10 +5,12 @@ using UnityEngine;
 
 public class Timer : MonoBehaviour
 {
-    public float timeElapsed = 0f;
+    float timeElapsed = 0f;
+    float bestTime = Mathf.Infinity;
     private bool timerRunning = false;
 
     [SerializeField] TMP_Text timerText;
+    [SerializeField] TMP_Text bestTimeText;
 
     void Update()
     {
@@ -23,7 +25,7 @@ public class Timer : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Start"))
         {
@@ -34,6 +36,16 @@ public class Timer : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("Finish"))
         {
             timerRunning = false;
+            UpdateBestTime();
+        }
+    }
+
+    void UpdateBestTime()
+    {
+        if(bestTime > timeElapsed)
+        {
+            bestTime = timeElapsed;
+            bestTimeText.text = bestTime.ToString("F2");
         }
     }
 }
