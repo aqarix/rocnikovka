@@ -9,6 +9,9 @@ public class GrapplingHook : MonoBehaviour
     [SerializeField] float grappleReach;
     [SerializeField] LayerMask grappleLayer;
     [SerializeField] LineRenderer ropeRenderer;
+    AudioSource asc;
+    [SerializeField] AudioClip grappleSound;
+    bool soundPlayed = false;
 
     Vector2 targetPosition;
     bool isPulling = false;
@@ -17,6 +20,7 @@ public class GrapplingHook : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        asc = GetComponent<AudioSource>();
 
         if (ropeRenderer != null)
         {
@@ -45,12 +49,19 @@ public class GrapplingHook : MonoBehaviour
                     ropeRenderer.SetPosition(0, transform.position);
                     ropeRenderer.SetPosition(1, targetPosition);
                 }
+
+                if(!soundPlayed)
+                {
+                    asc.PlayOneShot(grappleSound);
+                    soundPlayed = true;
+                }
             }
         }
 
         if (Input.GetMouseButtonUp(0))
         {
             isPulling = false;
+            soundPlayed = false;
             if (ropeRenderer != null)
             {
                 ropeRenderer.enabled = false;
